@@ -1,0 +1,40 @@
+name: Update Prague events
+
+on:
+  schedule:
+    # Daily at 05:17 UTC (~06:17 Prague). Off the :00 mark on purpose.
+    - cron: "17 5 * * *"
+  workflow_dispatch:        # allows a manual run from the Actions tab
+
+permissions:
+  contents: write           # lets the job commit the refreshed index.html
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run scraper
+        run: python scraper.py
+
+      - name: Commit updated page
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html seen_events.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Auto-update events ($(date -u +%Y-%m-%d))"
+            git push
+          fi
