@@ -113,6 +113,7 @@ _KEYWORDS = {
 _CAT_LABELS = {
     "cinema":     "Cinema",
     "theater":    "Theater",
+    "standup":    "Stand-up",
     "concert":    "Music",
     "festival":   "Festival",
     "exhibition": "Exhibition",
@@ -126,6 +127,7 @@ _CAT_LABELS = {
 _CAT_COLORS = {
     "cinema":     "#e74c3c",
     "theater":    "#8e44ad",
+    "standup":    "#f39c12",
     "concert":    "#2980b9",
     "festival":   "#e67e22",
     "exhibition": "#27ae60",
@@ -139,6 +141,7 @@ _CAT_COLORS = {
 _CAT_ICONS = {
     "cinema":     "🎬",
     "theater":    "🎭",
+    "standup":    "🎤",
     "concert":    "🎵",
     "festival":   "🎪",
     "exhibition": "🎨",
@@ -148,6 +151,9 @@ _CAT_ICONS = {
     "sports":     "🏃",
     "other":      "⭐",
 }
+
+# Stand-up is detected by title/description since GoOut's tag is sparse
+_STANDUP_RE = re.compile(r"(stand[-\s]?up|na\s+stojáka|na\s+stojaka|open\s*mic)", re.I)
 
 
 def classify(text: str) -> str:
@@ -236,13 +242,18 @@ def _ev(title, date="", time_="", venue="Praha", category=None,
     if end and not _ISO_DATE.match(str(end)):
         end, _ = _parse_dt(end)
     desc = (description or "").strip()
+    cat = category or classify(title + " " + desc)
+    # Stand-up is its own category — overrides whatever the source assigned
+    if _STANDUP_RE.search(title + " " + desc):
+        cat = "standup"
+        subcat = ""
     return {
         "title":       title.strip(),
         "date":        date or "",
         "end":         end or "",
         "time":        time_[:5] if time_ else "",
         "venue":       venue.strip() or "Praha",
-        "category":    category or classify(title + " " + desc),
+        "category":    cat,
         "subcat":      subcat or "",
         "recommended": bool(recommended),
         "popularity":  int(popularity or 0),
@@ -1149,7 +1160,7 @@ const LANG = {
     months: ["Leden","Unor","Brezen","Duben","Kveten","Cerven","Cervenec","Srpen","Zari","Rijen","Listopad","Prosinec"],
     monthsOf: ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"],
     days: ["Po","Út","St","Čt","Pá","So","Ne"],
-    cats: { cinema:"Kino", theater:"Divadlo", concert:"Hudba", festival:"Festival",
+    cats: { cinema:"Kino", theater:"Divadlo", standup:"Stand-up", concert:"Hudba", festival:"Festival",
             exhibition:"Výstava", outdoor:"Open Air", comedy:"Komedie", dance:"Tanec",
             family:"Pro děti", sports:"Sport", other:"Ostatní" },
     sources: "Zdroje",
@@ -1178,7 +1189,7 @@ const LANG = {
     months: ["January","February","March","April","May","June","July","August","September","October","November","December"],
     monthsOf: ["January","February","March","April","May","June","July","August","September","October","November","December"],
     days: ["Mo","Tu","We","Th","Fr","Sa","Su"],
-    cats: { cinema:"Cinema", theater:"Theater", concert:"Music", festival:"Festival",
+    cats: { cinema:"Cinema", theater:"Theater", standup:"Stand-up", concert:"Music", festival:"Festival",
             exhibition:"Exhibition", outdoor:"Open Air", comedy:"Comedy", dance:"Dance",
             family:"Family", sports:"Sports", other:"Other" },
     sources: "Sources",
@@ -1207,7 +1218,7 @@ const LANG = {
     months: ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
     monthsOf: ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"],
     days: ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],
-    cats: { cinema:"Кино", theater:"Театр", concert:"Музыка", festival:"Фестиваль",
+    cats: { cinema:"Кино", theater:"Театр", standup:"Стендап", concert:"Музыка", festival:"Фестиваль",
             exhibition:"Выставка", outdoor:"На улице", comedy:"Комедия", dance:"Танцы",
             family:"Для детей", sports:"Спорт", other:"Другое" },
     sources: "Источники",
@@ -1236,7 +1247,7 @@ const LANG = {
     months: ["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"],
     monthsOf: ["січня","лютого","березня","квітня","травня","червня","липня","серпня","вересня","жовтня","листопада","грудня"],
     days: ["Пн","Вт","Ср","Чт","Пт","Сб","Нд"],
-    cats: { cinema:"Кіно", theater:"Театр", concert:"Музика", festival:"Фестиваль",
+    cats: { cinema:"Кіно", theater:"Театр", standup:"Стендап", concert:"Музика", festival:"Фестиваль",
             exhibition:"Виставка", outdoor:"Просто неба", comedy:"Комедія", dance:"Танці",
             family:"Для дітей", sports:"Спорт", other:"Інше" },
     sources: "Джерела",
@@ -1265,7 +1276,7 @@ const LANG = {
     months: ["Tháng 1","Tháng 2","Tháng 3","Tháng 4","Tháng 5","Tháng 6","Tháng 7","Tháng 8","Tháng 9","Tháng 10","Tháng 11","Tháng 12"],
     monthsOf: ["Tháng 1","Tháng 2","Tháng 3","Tháng 4","Tháng 5","Tháng 6","Tháng 7","Tháng 8","Tháng 9","Tháng 10","Tháng 11","Tháng 12"],
     days: ["T2","T3","T4","T5","T6","T7","CN"],
-    cats: { cinema:"Rạp chiếu phim", theater:"Nhà hát", concert:"Âm nhạc", festival:"Lễ hội",
+    cats: { cinema:"Rạp chiếu phim", theater:"Nhà hát", standup:"Stand-up", concert:"Âm nhạc", festival:"Lễ hội",
             exhibition:"Triển lãm", outdoor:"Ngoài trời", comedy:"Hài kịch", dance:"Khiêu vũ",
             family:"Gia đình", sports:"Thể thao", other:"Khác" },
     sources: "Nguồn",
