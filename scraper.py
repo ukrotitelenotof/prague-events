@@ -153,7 +153,9 @@ _CAT_ICONS = {
 }
 
 # Stand-up is detected by title/description since GoOut's tag is sparse
-_STANDUP_RE = re.compile(r"(stand[-\s]?up|na\s+stojáka|na\s+stojaka|open\s*mic)", re.I)
+_STANDUP_RE = re.compile(
+    r"(stand[-\s]?up|na\s+stojáka|na\s+stojaka|open\s*mic|"
+    r"comedy\s*(?:club|klub|show|night|open)|underground\s+comedy|improv\s+comedy)", re.I)
 
 
 def classify(text: str) -> str:
