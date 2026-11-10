@@ -326,6 +326,34 @@ def _pick_subcat(tags, category):
             return hit[1]
     return ""
 
+_GOOUT_MUSIC_TAGS = {"rock","pop","classical","jazz","electronic","folk","punk","metal",
+                     "rap","hiphop","concert_alternative","blues","world_music","jazz_blues_swing"}
+
+def _goout_refine(attrs):
+    """GoOut's 'in_city' bucket maps to 'other', but many are really films, plays,
+    concerts etc. Use the structured tags/categories (reliable) to reclassify.
+    Tours, walks, talks, discussions, workshops, experiences stay 'other'."""
+    cats = attrs.get("categories", []) or []
+    tags = attrs.get("tags", []) or []
+    # A secondary real category on the event is the strongest signal
+    for c in cats:
+        m = _GOOUT_CAT.get(c)
+        if m and m != "other":
+            return m
+    if "projection" in tags or any(t.startswith("film") for t in tags):
+        return "cinema"
+    if any(t in _GOOUT_MUSIC_TAGS for t in tags):
+        return "concert"
+    if any(t.startswith("play") or t == "drama" for t in tags):
+        return "theater"
+    if any(t.startswith("for_children") or t == "fairy_tale" for t in tags):
+        return "family"
+    if "in_city_outdoor" in tags or any(t.startswith("gastronomy") for t in tags):
+        return "outdoor"
+    if any("danc" in t for t in tags):
+        return "dance"
+    return "other"
+
 def scrape_goout(max_pages: int = 110) -> list:
     by_event = {}          # event_id → aggregated event dict (one card per event)
     scroll = None
@@ -395,6 +423,8 @@ def scrape_goout(max_pages: int = 110) -> list:
                 attrs = ev.get("attributes", {})
                 maincat = attrs.get("mainCategory", "")
                 cat = _GOOUT_CAT.get(maincat) or classify(name + " " + desc)
+                if cat == "other":                     # upgrade vague "in_city" via tags
+                    cat = _goout_refine(attrs)
                 subcat = _pick_subcat(attrs.get("tags", []), cat)
                 recommended = attrs.get("recommendation") == "recommended"
                 followers = (venue.get("attributes", {}).get("counts", {}) or {}).get("followers", 0) or 0
