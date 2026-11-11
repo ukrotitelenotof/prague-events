@@ -90,7 +90,8 @@ _KEYWORDS = {
     "theater":    ["divadlo", "theater", "theatre", "opera", "balet", "ballet",
                    "muzikál", "musical", "kabaret", "pantomima", "komedie", "drama",
                    "tragédie", "fringe", "stand-up", "standup", "comedy", "humor",
-                   "improvizace", "improv", "kabaretní", "satirické", "sketch"],
+                   "improvizace", "improv", "kabaretní", "satirické", "sketch",
+                   "divadelní", "scénické", "inscenac", "burlesque"],
     "concert":    ["koncert", "concert", "jazz", "rock", "pop", "klasická",
                    "filharmonie", "hudba", "music", "recitál", "folk", "metal",
                    "choir", "zpěv", "symphony", "orchestra", "band", "gig", "live music"],
@@ -98,10 +99,12 @@ _KEYWORDS = {
                    "open-air festival", "filmový festival", "hudební festival"],
     "exhibition": ["výstava", "exhibition", "galerie", "gallery", "vernisáž",
                    "muzeum", "museum", "výstaviště", "umění", "art show", "expo",
-                   "installation", "photography", "sculpture"],
+                   "installation", "photography", "sculpture", "fotografi"],
     "outdoor":    ["open air", "openair", "open-air", "outdoor", "venkovní",
                    "piknik", "street food", "farmářský", "jarmark", "trh ",
-                   "park ", "náměstí", "market", "rooftop", "garden party"],
+                   "park ", "náměstí", "market", "rooftop", "garden party",
+                   "vycházka", "procházka", "komentovaná prohlídka",
+                   "guided tour", "city walk", "city tour", "walking tour"],
     "dance":      ["tanec", "dance", "taneční", "dj set", "techno", "club night",
                    "disco", "rave", "tango", "salsa", "swing"],
     "family":     ["pro děti", "dětský", "rodinný", "pohádka", "children",
@@ -352,6 +355,16 @@ def _goout_refine(attrs):
         return "outdoor"
     if any("danc" in t for t in tags):
         return "dance"
+    # Specific in_city sub-tags that map clearly to a category
+    if "in_city_ball" in tags:
+        return "dance"
+    if "in_city_burlesque" in tags:
+        return "theater"
+    if any(t in ("in_city_city_markets", "in_city_fair") for t in tags):
+        return "outdoor"
+    # City walks and guided tours → outdoor (they are outdoor activities)
+    if "in_city_guided_tour" in tags or "in_city_walk" in tags:
+        return "outdoor"
     return "other"
 
 def scrape_goout(max_pages: int = 110) -> list:
