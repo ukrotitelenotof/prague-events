@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ukrotitelenotof.github.io/prague-events/sitemap.xml

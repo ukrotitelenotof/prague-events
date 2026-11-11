@@ -751,7 +751,53 @@ _HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Praha — Kulturní akce | Prague Cultural Events</title>
+<title>Prague Cultural Events — What's On in Prague | Kulturní akce v Praze</title>
+
+<!-- SEO -->
+<meta name="description" content="Discover upcoming cultural events in Prague — cinema, theatre, concerts, festivals, exhibitions, stand-up and more. Updated daily. Available in Czech, English, Russian, Ukrainian and Vietnamese. Kulturní akce v Praze, aktualizováno denně.">
+<meta name="keywords" content="Prague events, Praha akce, Prague cultural events, things to do in Prague, co dělat v Praze, Prague concerts, Prague theatre, Prague cinema, Prague festivals, Prague exhibitions, kulturní akce Praha, Prague what's on, events Prague today">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0f0f13">
+<link rel="canonical" href="https://ukrotitelenotof.github.io/prague-events/">
+
+<!-- Favicon (inline SVG — a gold Prague skyline tile) -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="favicon.png">
+
+<!-- Open Graph (Facebook, Telegram, LinkedIn, WhatsApp link previews) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Prague Cultural Events">
+<meta property="og:title" content="Prague Cultural Events — What's On in Prague">
+<meta property="og:description" content="Upcoming cinema, theatre, concerts, festivals, exhibitions, stand-up and more in Prague. Updated daily, in 5 languages.">
+<meta property="og:url" content="https://ukrotitelenotof.github.io/prague-events/">
+<meta property="og:image" content="https://ukrotitelenotof.github.io/prague-events/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="cs_CZ">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="uk_UA">
+<meta property="og:locale:alternate" content="vi_VN">
+
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Prague Cultural Events — What's On in Prague">
+<meta name="twitter:description" content="Upcoming cinema, theatre, concerts, festivals, exhibitions and more in Prague. Updated daily, in 5 languages.">
+<meta name="twitter:image" content="https://ukrotitelenotof.github.io/prague-events/og-image.png">
+
+<!-- Structured data for search engines -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Prague Cultural Events",
+  "alternateName": "Kulturní akce v Praze",
+  "url": "https://ukrotitelenotof.github.io/prague-events/",
+  "description": "Upcoming cultural events in Prague — cinema, theatre, concerts, festivals, exhibitions and more. Updated daily.",
+  "inLanguage": ["cs","en","ru","uk","vi"]
+}
+</script>
+
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -2049,6 +2095,23 @@ def main():
 
     OUT_FILE.write_text(html, encoding="utf-8")
     log.info("Written %s (%d unique events)", OUT_FILE, len(events))
+
+    # Keep sitemap.xml's lastmod current so search engines crawl daily
+    try:
+        today = datetime.now().strftime("%Y-%m-%d")
+        (SCRIPT_DIR / "sitemap.xml").write_text(
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            '  <url>\n'
+            '    <loc>https://ukrotitelenotof.github.io/prague-events/</loc>\n'
+            f'    <lastmod>{today}</lastmod>\n'
+            '    <changefreq>daily</changefreq>\n'
+            '    <priority>1.0</priority>\n'
+            '  </url>\n'
+            '</urlset>\n', encoding="utf-8")
+    except Exception as e:
+        log.warning("Could not update sitemap.xml: %s", e)
+
     log.info("Open: %s", OUT_FILE.as_uri())
     log.info("=== Done ===")
 
